@@ -163,10 +163,6 @@
   .cred-foot .v{ font-family:var(--mono); font-size:11px; color:var(--gold-2); }
   .cred-prove{ margin-top:13px; font-family:var(--mono); font-size:11px; color:var(--muted); min-height:15px; }
   .cred-prove b{ color:var(--jade); font-weight:500; }
-  /* engraved seal medallion */
-  .seal-badge{ position:absolute; z-index:2; right:20px; bottom:70px; width:62px; height:62px; }
-  .seal-badge .ring{ animation:spin 30s linear infinite; transform-origin:center; transform-box:fill-box; }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
 
   /* ---------- compare / ledger ---------- */
   .compare{ display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line-soft); border-radius:var(--r); overflow:hidden; }
@@ -405,14 +401,6 @@
             <span class="v">did:proofly:0x7a4f…e912</span>
           </div>
           <div class="cred-prove" id="ppProve">Proving: <b>KYC completed</b> &rarr; verified ✓</div>
-          <svg class="seal-badge" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-            <g class="ring">
-              <circle cx="50" cy="50" r="46" stroke="var(--gold)" stroke-width="1" opacity=".5"/>
-              <circle cx="50" cy="50" r="40" stroke="var(--gold)" stroke-width="0.6" stroke-dasharray="2 4" opacity=".6"/>
-            </g>
-            <circle cx="50" cy="50" r="30" fill="color-mix(in srgb, var(--jade) 16%, transparent)" stroke="var(--jade)" stroke-width="1"/>
-            <path d="M38 51l8 8 17-19" stroke="var(--jade)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </div>
       </div>
     </div>

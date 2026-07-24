@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Proofly — Verify Once. Prove Everywhere.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Proofly replaces repeated KYC paperwork with reusable cryptographic proof. Verify your identity once, then let an AI compliance agent answer every institution with a zero-knowledge proof — never the documents behind it." />
+<meta name="author" content="Adwait Keshari" />
+<meta property="og:title" content="Proofly — Verify Once. Prove Everywhere." />
+<meta property="og:description" content="Agentic, privacy-first compliance infrastructure for cross-border finance. Verify once, prove everywhere with zero-knowledge proofs." />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#0E9E6E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5l11 4v8.2c0 7.3-4.7 12.7-11 14.8C9.7 27.4 5 22 5 14.7V6.5z' fill='%2312B981'/%3E%3Cpath d='M10.5 16.2l3.6 3.6 7.4-7.7' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+<style>
+  :root{
+    --bg:#F4F6FB; --bg-2:#EAEEF7; --surface:#FFFFFF; --surface-2:#F7F9FD;
+    --text:#0B1220; --text-muted:#586274; --text-faint:#8A93A6;
+    --border:#E4E9F2; --border-strong:#D3DAEA;
+    --brand:#0E9E6E; --brand-strong:#0B855D; --brand-soft:#E4F6EE; --on-brand:#FFFFFF;
+    --proof:#0FA96E; --risk:#C57A17; --risk-soft:#FBEFDA; --critical:#D33C55; --critical-soft:#FBE7EB;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --shadow-sm: 0 1px 2px rgba(11,18,32,.05), 0 1px 1px rgba(11,18,32,.04);
+    --shadow-md: 0 2px 4px rgba(11,18,32,.05), 0 12px 32px rgba(11,18,32,.08);
+    --shadow-lg: 0 8px 24px rgba(11,18,32,.10), 0 32px 64px rgba(11,18,32,.12);
+    --ring: 0 0 0 3px color-mix(in srgb, var(--brand) 30%, transparent);
+    --radius: 14px; --radius-lg: 22px;
+    --grid: color-mix(in srgb, var(--text) 6%, transparent);
+    color-scheme: light;
+  }
+  .darktokens{
+    --bg:#070B14; --bg-2:#0A1020; --surface:#0E1626; --surface-2:#131D31;
+    --text:#EAEFF9; --text-muted:#939FB8; --text-faint:#67728C;
+    --border:#1C2740; --border-strong:#2A3757;
+    --brand:#16C88A; --brand-strong:#12B981; --brand-soft:#0E2A22; --on-brand:#04140E;
+    --proof:#2FE0A6; --risk:#F0A84A; --risk-soft:#251C0C; --critical:#F4667C; --critical-soft:#2A1218;
+    --border-strong:#2A3757;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-md: 0 2px 6px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.45);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.5), 0 40px 80px rgba(0,0,0,.5);
+    --grid: color-mix(in srgb, var(--text) 8%, transparent);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark){ :root{
+    --bg:#070B14; --bg-2:#0A1020; --surface:#0E1626; --surface-2:#131D31;
+    --text:#EAEFF9; --text-muted:#939FB8; --text-faint:#67728C;
+    --border:#1C2740; --border-strong:#2A3757;
+    --brand:#16C88A; --brand-strong:#12B981; --brand-soft:#0E2A22; --on-brand:#04140E;
+    --proof:#2FE0A6; --risk:#F0A84A; --risk-soft:#251C0C; --critical:#F4667C; --critical-soft:#2A1218;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-md: 0 2px 6px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.45);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.5), 0 40px 80px rgba(0,0,0,.5);
+    --grid: color-mix(in srgb, var(--text) 8%, transparent);
+    color-scheme: dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#070B14; --bg-2:#0A1020; --surface:#0E1626; --surface-2:#131D31;
+    --text:#EAEFF9; --text-muted:#939FB8; --text-faint:#67728C;
+    --border:#1C2740; --border-strong:#2A3757;
+    --brand:#16C88A; --brand-strong:#12B981; --brand-soft:#0E2A22; --on-brand:#04140E;
+    --proof:#2FE0A6; --risk:#F0A84A; --risk-soft:#251C0C; --critical:#F4667C; --critical-soft:#2A1218;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-md: 0 2px 6px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.45);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.5), 0 40px 80px rgba(0,0,0,.5);
+    --grid: color-mix(in srgb, var(--text) 8%, transparent);
+    color-scheme: dark;
+  }
+  :root[data-theme="light"]{
+    --bg:#F4F6FB; --bg-2:#EAEEF7; --surface:#FFFFFF; --surface-2:#F7F9FD;
+    --text:#0B1220; --text-muted:#586274; --text-faint:#8A93A6;
+    --border:#E4E9F2; --border-strong:#D3DAEA;
+    --brand:#0E9E6E; --brand-strong:#0B855D; --brand-soft:#E4F6EE; --on-brand:#FFFFFF;
+    --proof:#0FA96E; --risk:#C57A17; --risk-soft:#FBEFDA; --critical:#D33C55; --critical-soft:#FBE7EB;
+    --shadow-sm: 0 1px 2px rgba(11,18,32,.05), 0 1px 1px rgba(11,18,32,.04);
+    --shadow-md: 0 2px 4px rgba(11,18,32,.05), 0 12px 32px rgba(11,18,32,.08);
+    --shadow-lg: 0 8px 24px rgba(11,18,32,.10), 0 32px 64px rgba(11,18,32,.12);
+    --grid: color-mix(in srgb, var(--text) 6%, transparent);
+    color-scheme: light;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); line-height:1.55;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  ::selection{ background:color-mix(in srgb, var(--brand) 28%, transparent); }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; }
+  .wrap{ width:min(1180px, 92vw); margin-inline:auto; }
+  .mono{ font-family:var(--mono); font-feature-settings:"ss01","zero"; }
+  .tnum{ font-variant-numeric:tabular-nums; }
+
+  /* ---------- top chrome ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    background:color-mix(in srgb, var(--bg) 78%, transparent);
+    backdrop-filter:blur(14px) saturate(1.3); -webkit-backdrop-filter:blur(14px) saturate(1.3);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-inner{ display:flex; align-items:center; gap:20px; height:64px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.02em; font-size:18px; }
+  .brand .seal{ width:26px; height:26px; flex:0 0 auto; }
+  .brand b{ color:var(--brand-strong); }
+  :root[data-theme="dark"] .brand b, .darktokens .brand b{ color:var(--brand); }
+  .nav-links{ display:flex; gap:6px; margin-left:12px; }
+  .nav-links a{
+    font-size:13.5px; color:var(--text-muted); padding:7px 12px; border-radius:9px;
+    transition:color .18s ease, background .18s ease;
+  }
+  .nav-links a:hover{ color:var(--text); background:var(--surface-2); }
+  .nav-right{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+  .pill{
+    font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--brand-strong); background:var(--brand-soft);
+    padding:5px 10px; border-radius:999px; border:1px solid color-mix(in srgb, var(--brand) 26%, transparent);
+  }
+  :root[data-theme="dark"] .pill, .darktokens .pill{ color:var(--brand); }
+  .icon-btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:38px; height:38px; border-radius:10px; cursor:pointer;
+    background:var(--surface); border:1px solid var(--border); color:var(--text-muted);
+    transition:color .18s, border-color .18s, transform .18s;
+  }
+  .icon-btn:hover{ color:var(--text); border-color:var(--border-strong); }
+  .icon-btn:active{ transform:scale(.94); }
+  .icon-btn svg{ width:18px; height:18px; }
+  :focus-visible{ outline:none; box-shadow:var(--ring); border-radius:8px; }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex; align-items:center; gap:9px; cursor:pointer;
+    font-size:14.5px; font-weight:600; letter-spacing:-.01em;
+    padding:12px 20px; border-radius:12px; border:1px solid transparent;
+    transition:transform .16s ease, box-shadow .2s ease, background .2s, border-color .2s, color .2s;
+    white-space:nowrap;
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--brand); color:var(--on-brand); box-shadow:0 1px 0 color-mix(in srgb, var(--brand-strong) 60%, transparent), var(--shadow-md); }
+  .btn-primary:hover{ background:var(--brand-strong); box-shadow:var(--shadow-lg); }
+  :root[data-theme="dark"] .btn-primary:hover, .darktokens .btn-primary:hover{ background:var(--proof); }
+  .btn-ghost{ background:var(--surface); color:var(--text); border-color:var(--border-strong); box-shadow:var(--shadow-sm); }
+  .btn-ghost:hover{ border-color:var(--brand); color:var(--brand-strong); }
+  :root[data-theme="dark"] .btn-ghost:hover, .darktokens .btn-ghost:hover{ color:var(--brand); }
+  .btn[disabled]{ opacity:.5; pointer-events:none; }
+  .btn svg{ width:17px; height:17px; }
+
+  /* ---------- hero ---------- */
+  .hero{ position:relative; padding:72px 0 40px; overflow:hidden; }
+  #net{ position:absolute; inset:0; width:100%; height:100%; z-index:0; opacity:.9; pointer-events:none; }
+  .hero-glow{
+    position:absolute; z-index:0; pointer-events:none; filter:blur(70px); opacity:.5;
+    width:520px; height:520px; border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 62%);
+    top:-140px; right:-60px;
+  }
+  .hero-grid{ position:relative; z-index:2; display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600;
+    letter-spacing:.02em; color:var(--text-muted); margin-bottom:22px;
+    background:var(--surface); border:1px solid var(--border); padding:6px 12px 6px 8px; border-radius:999px;
+    box-shadow:var(--shadow-sm);
+  }
+  .eyebrow .dot{ width:7px; height:7px; border-radius:50%; background:var(--proof); box-shadow:0 0 0 3px color-mix(in srgb, var(--proof) 22%, transparent); }
+  h1.headline{
+    font-size:clamp(38px, 5.6vw, 66px); line-height:1.02; letter-spacing:-.035em; font-weight:800;
+    margin:0 0 20px; text-wrap:balance;
+  }
+  h1.headline .g{
+    background:linear-gradient(120deg, var(--brand-strong), var(--proof));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  :root[data-theme="dark"] h1.headline .g, .darktokens h1.headline .g{ background:linear-gradient(120deg, var(--brand), var(--proof)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub{ font-size:clamp(16px,1.7vw,18.5px); color:var(--text-muted); max-width:34em; margin:0 0 30px; }
+  .hero-cta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .hero-stats{ display:flex; gap:28px; margin-top:34px; flex-wrap:wrap; }
+  .hstat .n{ font-size:26px; font-weight:800; letter-spacing:-.03em; }
+  .hstat .n b{ color:var(--brand-strong); }
+  :root[data-theme="dark"] .hstat .n b, .darktokens .hstat .n b{ color:var(--brand); }
+  .hstat .l{ font-size:12.5px; color:var(--text-faint); margin-top:2px; }
+
+  /* ---------- passport ---------- */
+  .passport-stage{ position:relative; display:flex; justify-content:center; perspective:1400px; }
+  .passport{
+    position:relative; width:100%; max-width:420px; border-radius:var(--radius-lg);
+    padding:26px; color:#EAF6F0;
+    background:
+      radial-gradient(120% 90% at 0% 0%, rgba(47,224,166,.16), transparent 55%),
+      linear-gradient(160deg, #0d3b2e 0%, #0a1a25 58%, #0c1420 100%);
+    border:1px solid rgba(120,220,180,.22);
+    box-shadow:var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,.06);
+    transform:rotateX(6deg) rotateY(-8deg);
+    transition:transform .5s cubic-bezier(.2,.7,.2,1);
+    overflow:hidden;
+  }
+  .passport::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.10) 46%, transparent 60%);
+    transform:translateX(-30%); animation:sheen 6.5s ease-in-out infinite;
+  }
+  @keyframes sheen{ 0%,72%{ transform:translateX(-60%);} 86%,100%{ transform:translateX(120%);} }
+  .passport-stage:hover .passport{ transform:rotateX(3deg) rotateY(-3deg) translateY(-4px); }
+  .pp-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .pp-brand{ display:flex; align-items:center; gap:8px; font-weight:700; letter-spacing:-.01em; font-size:14px; }
+  .pp-label{ font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:rgba(180,230,210,.7); }
+  .pp-live{ display:flex; align-items:center; gap:6px; font-size:10.5px; color:rgba(180,230,210,.85); }
+  .pp-live .d{ width:6px; height:6px; border-radius:50%; background:#2FE0A6; box-shadow:0 0 0 0 rgba(47,224,166,.6); animation:pulse 2.4s ease-out infinite; }
+  @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(47,224,166,.5);} 70%{ box-shadow:0 0 0 8px rgba(47,224,166,0);} 100%{ box-shadow:0 0 0 0 rgba(47,224,166,0);} }
+  .pp-holder{ font-size:11px; letter-spacing:.04em; color:rgba(180,230,210,.65); margin-bottom:3px; }
+  .pp-name{ font-size:20px; font-weight:700; letter-spacing:-.01em; margin-bottom:18px; }
+  .pp-attrs{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .pp-attr{ display:flex; align-items:center; gap:9px; background:rgba(255,255,255,.05); border:1px solid rgba(120,220,180,.14); border-radius:11px; padding:10px 11px; }
+  .pp-attr svg{ width:16px; height:16px; flex:0 0 auto; color:#2FE0A6; }
+  .pp-attr span{ font-size:12.5px; font-weight:600; color:#DCEFE6; }
+  .pp-did{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding-top:14px; border-top:1px solid rgba(120,220,180,.14); }
+  .pp-did .k{ font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(180,230,210,.55); }
+  .pp-did .v{ font-family:var(--mono); font-size:11.5px; color:#B9E6D5; }
+  .pp-prove{ margin-top:14px; font-family:var(--mono); font-size:11.5px; color:rgba(190,235,215,.75); min-height:16px; }
+  .pp-prove b{ color:#2FE0A6; }
+
+  /* ---------- section shell ---------- */
+  section.band{ padding:86px 0; position:relative; }
+  .band.alt{ background:var(--surface); border-block:1px solid var(--border); }
+  .kicker{ font-size:12.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--brand-strong); margin:0 0 14px; }
+  :root[data-theme="dark"] .kicker, .darktokens .kicker{ color:var(--brand); }
+  h2.title{ font-size:clamp(28px,3.6vw,40px); line-height:1.08; letter-spacing:-.03em; font-weight:800; margin:0 0 16px; text-wrap:balance; }
+  .lead{ font-size:17px; color:var(--text-muted); max-width:44em; margin:0; }
+  .sec-head{ max-width:660px; margin-bottom:44px; }
+
+  /* ---------- contrast today/proofly ---------- */
+  .compare{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  .cmp{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px; box-shadow:var(--shadow-sm); }
+  .cmp.good{ border-color:color-mix(in srgb, var(--brand) 34%, var(--border)); box-shadow:var(--shadow-md); background:linear-gradient(180deg, var(--brand-soft), var(--surface) 60%); }
+  .cmp h3{ display:flex; align-items:center; gap:10px; font-size:14px; letter-spacing:.02em; margin:0 0 18px; text-transform:uppercase; }
+  .cmp h3 .tag{ font-size:11px; font-weight:700; letter-spacing:.1em; padding:4px 9px; border-radius:999px; }
+  .cmp.bad h3 .tag{ background:var(--critical-soft); color:var(--critical); }
+  .cmp.good h3 .tag{ background:var(--brand); color:var(--on-brand); }
+  .cmp ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .cmp li{ display:flex; gap:12px; align-items:flex-start; font-size:15px; color:var(--text); }
+  .cmp li .ic{ flex:0 0 auto; width:22px; height:22px; border-radius:7px; display:grid; place-items:center; margin-top:1px; }
+  .cmp.bad li .ic{ background:var(--critical-soft); color:var(--critical); }
+  .cmp.good li .ic{ background:color-mix(in srgb, var(--brand) 16%, transparent); color:var(--brand-strong); }
+  :root[data-theme="dark"] .cmp.good li .ic, .darktokens .cmp.good li .ic{ color:var(--brand); }
+  .cmp li .ic svg{ width:14px; height:14px; }
+  .cmp li b{ font-weight:600; }
+  .cmp li span{ color:var(--text-muted); }
+
+  /* ---------- demo console ---------- */
+  .console{
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-lg); overflow:hidden;
+  }
+  .console-bar{ display:flex; align-items:center; gap:8px; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--surface-2); }
+  .traffic{ display:flex; gap:7px; margin-right:8px; }
+  .traffic i{ width:11px; height:11px; border-radius:50%; display:block; }
+  .traffic i:nth-child(1){ background:#f0665f; } .traffic i:nth-child(2){ background:#f4bf4f; } .traffic i:nth-child(3){ background:#4fc76a; }
+  .console-url{ font-family:var(--mono); font-size:12px; color:var(--text-faint); display:flex; align-items:center; gap:7px; }
+  .console-url svg{ width:13px; height:13px; color:var(--brand); }
+  .console-tag{ margin-left:auto; font-size:11px; color:var(--text-faint); font-family:var(--mono); }
+
+  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; border-bottom:1px solid var(--border); }
+  .step{
+    display:flex; align-items:center; gap:12px; padding:16px 20px; cursor:pointer; background:transparent;
+    border:none; border-right:1px solid var(--border); text-align:left; color:var(--text-muted);
+    transition:background .2s, color .2s; position:relative;
+  }
+  .step:last-child{ border-right:none; }
+  .step:hover{ background:var(--surface-2); }
+  .step.active{ color:var(--text); background:var(--surface); }
+  .step.active::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--brand); }
+  .step .num{
+    width:28px; height:28px; flex:0 0 auto; border-radius:9px; display:grid; place-items:center;
+    font-size:13px; font-weight:700; border:1px solid var(--border-strong); color:var(--text-muted); background:var(--surface);
+    transition:all .2s;
+  }
+  .step.active .num, .step.done .num{ background:var(--brand); color:var(--on-brand); border-color:var(--brand); }
+  .step .st-t{ font-size:13.5px; font-weight:700; letter-spacing:-.01em; }
+  .step .st-s{ font-size:11.5px; color:var(--text-faint); }
+  @media (max-width:640px){ .step .st-s{ display:none; } }
+
+  .stage{ padding:30px; min-height:430px; position:relative; }
+  .act{ display:none; animation:fade .45s ease both; }
+  .act.show{ display:block; }
+  @keyframes fade{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none;} }
+  .act-grid{ display:grid; grid-template-columns:1fr 1fr; gap:26px; align-items:start; }
+  .act h3{ font-size:20px; letter-spacing:-.02em; margin:0 0 8px; }
+  .act .desc{ font-size:14.5px; color:var(--text-muted); margin:0 0 20px; max-width:40em; }
+
+  .panel{ background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+  .panel + .panel{ margin-top:14px; }
+  .panel-h{ display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:14px; }
+  .panel-h svg{ width:15px; height:15px; color:var(--brand); }
+
+  .field{ display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px dashed var(--border); }
+  .field:last-child{ border-bottom:none; }
+  .field .fl{ font-size:13.5px; color:var(--text-muted); }
+  .field .fv{ font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; }
+  .lock{ font-family:var(--mono); font-size:12.5px; color:var(--text-faint); letter-spacing:1px; }
+  .badge-ok{ display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; color:var(--proof); background:color-mix(in srgb, var(--proof) 14%, transparent); padding:3px 8px; border-radius:999px; }
+  .badge-ok svg{ width:12px; height:12px; }
+
+  /* agent console log */
+  .agent{ background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; font-family:var(--mono); font-size:12.5px; min-height:150px; }
+  :root[data-theme="dark"] .agent, .darktokens .agent{ background:#060B15; }
+  .logline{ display:flex; gap:10px; padding:4px 0; color:var(--text-muted); opacity:0; transform:translateY(4px); animation:logIn .3s ease forwards; }
+  @keyframes logIn{ to{ opacity:1; transform:none; } }
+  .logline .t{ color:var(--text-faint); flex:0 0 auto; }
+  .logline .m b{ color:var(--brand); }
+  .logline.ok .m{ color:var(--proof); }
+  .logline.warn .m{ color:var(--risk); }
+  .logline.crit .m{ color:var(--critical); }
+  .cursor{ display:inline-block; width:7px; height:14px; background:var(--brand); vertical-align:-2px; animation:blink 1s steps(1) infinite; }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .proofstr{ word-break:break-all; font-family:var(--mono); font-size:11.5px; color:var(--brand); background:color-mix(in srgb, var(--brand) 9%, transparent); border:1px solid color-mix(in srgb, var(--brand) 22%, transparent); border-radius:9px; padding:10px 12px; margin-top:12px; }
+
+  .req-list{ display:flex; flex-direction:column; gap:10px; }
+  .req{
+    display:flex; align-items:center; gap:13px; width:100%; text-align:left; cursor:pointer;
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:13px 15px; color:var(--text);
+    transition:border-color .18s, box-shadow .18s, transform .12s, background .18s;
+  }
+  .req:hover{ border-color:var(--brand); box-shadow:var(--shadow-sm); }
+  .req:active{ transform:translateY(1px); }
+  .req.sel{ border-color:var(--brand); background:var(--brand-soft); }
+  .req .logo{ width:36px; height:36px; flex:0 0 auto; border-radius:10px; display:grid; place-items:center; font-weight:800; font-size:14px; color:var(--on-brand); }
+  .req .rq-t{ font-size:14px; font-weight:700; letter-spacing:-.01em; }
+  .req .rq-s{ font-size:12.5px; color:var(--text-muted); }
+  .req .rq-go{ margin-left:auto; color:var(--text-faint); }
+  .req.sel .rq-go{ color:var(--brand); }
+  .req .rq-go svg{ width:16px; height:16px; }
+
+  .verified-card{ text-align:center; padding:22px 18px; border-radius:var(--radius); border:1px solid color-mix(in srgb, var(--proof) 30%, var(--border)); background:linear-gradient(180deg, color-mix(in srgb, var(--proof) 10%, transparent), var(--surface-2)); }
+  .verified-card .big{ width:56px; height:56px; margin:0 auto 12px; border-radius:50%; display:grid; place-items:center; background:var(--proof); color:var(--on-brand); box-shadow:0 0 0 8px color-mix(in srgb, var(--proof) 16%, transparent); }
+  .verified-card .big svg{ width:30px; height:30px; }
+  .verified-card h4{ margin:0 0 4px; font-size:18px; letter-spacing:-.02em; }
+  .verified-card p{ margin:0; font-size:13.5px; color:var(--text-muted); }
+  .disclose{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px; }
+  .disclose div{ background:var(--surface); border:1px solid var(--border); border-radius:11px; padding:12px 8px; }
+  .disclose .dn{ font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--proof); }
+  .disclose .dl{ font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
+
+  .placeholder{ display:grid; place-items:center; text-align:center; height:100%; min-height:280px; color:var(--text-faint); }
+  .placeholder svg{ width:38px; height:38px; margin-bottom:12px; color:var(--border-strong); }
+  .placeholder p{ font-size:14px; max-width:24em; }
+
+  /* monitor table */
+  .mon-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .mon-live{ display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:700; color:var(--proof); }
+  .mon-live .d{ width:7px; height:7px; border-radius:50%; background:var(--proof); animation:pulse 2s infinite; }
+  .tbl{ width:100%; overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ text-align:left; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); font-weight:700; padding:0 12px 10px; border-bottom:1px solid var(--border); }
+  th.r, td.r{ text-align:right; }
+  td{ padding:12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tbody tr{ animation:rowIn .4s ease both; }
+  @keyframes rowIn{ from{ opacity:0; transform:translateX(-6px);} to{ opacity:1; transform:none;} }
+  .mrc{ font-weight:600; }
+  .corr{ font-family:var(--mono); font-size:11.5px; color:var(--text-muted); }
+  .amt{ font-family:var(--mono); font-weight:600; }
+  .score{ font-family:var(--mono); font-weight:700; }
+  .stat{ display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; padding:4px 9px; border-radius:999px; white-space:nowrap; }
+  .stat svg{ width:12px; height:12px; }
+  .stat.clr{ color:var(--proof); background:color-mix(in srgb, var(--proof) 13%, transparent); }
+  .stat.hold{ color:var(--critical); background:var(--critical-soft); }
+  .stat.rev{ color:var(--risk); background:var(--risk-soft); }
+  tr.flagged td{ background:color-mix(in srgb, var(--critical) 7%, transparent); }
+  .agent-note{ margin-top:14px; display:flex; gap:12px; align-items:flex-start; background:var(--critical-soft); border:1px solid color-mix(in srgb, var(--critical) 30%, transparent); border-radius:12px; padding:14px 16px; }
+  .agent-note .an-ic{ flex:0 0 auto; width:30px; height:30px; border-radius:9px; background:var(--critical); color:#fff; display:grid; place-items:center; }
+  .agent-note .an-ic svg{ width:17px; height:17px; }
+  .agent-note .an-t{ font-size:13.5px; font-weight:700; color:var(--critical); margin-bottom:2px; }
+  .agent-note .an-d{ font-size:13px; color:var(--text); }
+  .agent-note.hidden{ display:none; }
+
+  .stage-actions{ display:flex; gap:12px; align-items:center; margin-top:22px; flex-wrap:wrap; }
+  .replay{ font-size:13px; color:var(--text-muted); background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .replay:hover{ color:var(--brand-strong); }
+  :root[data-theme="dark"] .replay:hover, .darktokens .replay:hover{ color:var(--brand); }
+  .replay svg{ width:15px; height:15px; }
+
+  /* ---------- how it works ---------- */
+  .flow{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  .fcard{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px 22px; position:relative; box-shadow:var(--shadow-sm); }
+  .fcard .fn{ font-family:var(--mono); font-size:12px; color:var(--brand-strong); font-weight:700; letter-spacing:.1em; }
+  :root[data-theme="dark"] .fcard .fn, .darktokens .fcard .fn{ color:var(--brand); }
+  .fcard .fi{ width:42px; height:42px; border-radius:12px; background:var(--brand-soft); color:var(--brand-strong); display:grid; place-items:center; margin:14px 0 16px; }
+  :root[data-theme="dark"] .fcard .fi, .darktokens .fcard .fi{ color:var(--brand); }
+  .fcard .fi svg{ width:22px; height:22px; }
+  .fcard h4{ margin:0 0 7px; font-size:16px; letter-spacing:-.02em; }
+  .fcard p{ margin:0; font-size:13.5px; color:var(--text-muted); line-height:1.5; }
+
+  .tech{ margin-top:44px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .tech .tl{ font-size:12.5px; color:var(--text-faint); margin-right:6px; }
+  .chip{ font-size:12.5px; font-weight:600; color:var(--text); background:var(--surface); border:1px solid var(--border-strong); border-radius:999px; padding:7px 14px; }
+
+  .built{ margin-top:52px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; padding:22px 26px; border-radius:var(--radius-lg); background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+  .built .bt{ font-size:14.5px; color:var(--text-muted); }
+  .built .bt b{ color:var(--text); }
+  .built .proj{ font-weight:700; color:var(--brand-strong); }
+  :root[data-theme="dark"] .built .proj, .darktokens .built .proj{ color:var(--brand); }
+
+  /* ---------- footer ---------- */
+  footer{ border-top:1px solid var(--border); padding:40px 0 56px; }
+  .foot{ display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; }
+  .foot .fl{ font-size:13px; color:var(--text-faint); max-width:40em; }
+  .foot .fl b{ color:var(--text-muted); }
+
+  @media (max-width:900px){
+    .hero-grid{ grid-template-columns:1fr; gap:40px; }
+    .passport-stage{ order:-1; }
+    .passport{ transform:none; }
+    .compare{ grid-template-columns:1fr; }
+    .act-grid{ grid-template-columns:1fr; }
+    .flow{ grid-template-columns:1fr 1fr; }
+    .nav-links{ display:none; }
+  }
+  @media (max-width:560px){
+    .flow{ grid-template-columns:1fr; }
+    .hero-stats{ gap:20px; }
+    .stage{ padding:22px 18px; }
+    .disclose{ grid-template-columns:1fr 1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+    .passport::after{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <svg class="seal" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 2.5l11 4v8.2c0 7.3-4.7 12.7-11 14.8C9.7 27.4 5 22 5 14.7V6.5l11-4z" fill="currentColor" opacity=".14"/>
+        <path d="M16 2.5l11 4v8.2c0 7.3-4.7 12.7-11 14.8C9.7 27.4 5 22 5 14.7V6.5l11-4z" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M10.5 16.2l3.6 3.6 7.4-7.7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <style>.seal{color:var(--brand)}</style>
+      </svg>
+      Proof<b>ly</b>
+    </div>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#demo">Live demo</a>
+      <a href="#compare">Why it matters</a>
+    </nav>
+    <div class="nav-right">
+      <span class="pill">Prototype</span>
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle color theme" title="Toggle theme">
+        <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+        <svg class="ic-moon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <canvas id="net"></canvas>
+    <div class="hero-glow"></div>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="dot"></span> Compliance infrastructure for cross-border finance</span>
+        <h1 class="headline">Verify once.<br><span class="g">Prove everywhere.</span></h1>
+        <p class="sub">Proofly replaces repeated KYC paperwork with reusable cryptographic proof. Verify your identity a single time, then let an AI compliance agent answer every institution with a zero-knowledge proof — never the documents behind it.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#demo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/></svg>
+            Try the live demo
+          </a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hstat"><div class="n"><b>Weeks → Minutes</b></div><div class="l">Cross-border onboarding time</div></div>
+          <div class="hstat"><div class="n">0 <span style="font-size:15px;color:var(--text-muted);font-weight:600">docs</span></div><div class="l">Shared per verification</div></div>
+          <div class="hstat"><div class="n">24/7</div><div class="l">Continuous agent monitoring</div></div>
+        </div>
+      </div>
+      <div class="passport-stage">
+        <div class="passport" role="img" aria-label="Proofly compliance passport with verified attributes">
+          <div class="pp-top">
+            <div class="pp-brand">
+              <svg viewBox="0 0 32 32" width="20" height="20" fill="none"><path d="M16 2.5l11 4v8.2c0 7.3-4.7 12.7-11 14.8C9.7 27.4 5 22 5 14.7V6.5l11-4z" fill="#2FE0A6" opacity=".18"/><path d="M16 2.5l11 4v8.2c0 7.3-4.7 12.7-11 14.8C9.7 27.4 5 22 5 14.7V6.5l11-4z" stroke="#2FE0A6" stroke-width="1.6"/><path d="M10.5 16.2l3.6 3.6 7.4-7.7" stroke="#2FE0A6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Proofly
+            </div>
+            <span class="pp-live"><span class="d"></span> Active</span>
+          </div>
+          <div class="pp-label">Compliance Passport</div>
+          <div class="pp-holder" style="margin-top:14px">Holder</div>
+          <div class="pp-name">Verified Individual</div>
+          <div class="pp-attrs">
+            <div class="pp-attr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>KYC Verified</span></div>
+            <div class="pp-attr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Accredited</span></div>
+            <div class="pp-attr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Sanctions Clear</span></div>
+            <div class="pp-attr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Jurisdiction OK</span></div>
+          </div>
+          <div class="pp-did">
+            <span class="k">Passport ID</span>
+            <span class="v">did:proofly:0x7a4f…e912</span>
+          </div>
+          <div class="pp-prove" id="ppProve">Proving: <b>KYC completed</b> → verified ✓</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARE -->
+  <section class="band alt" id="compare">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">Why it matters</p>
+        <h2 class="title">Every institution asks the same question. Today, you answer it from scratch.</h2>
+        <p class="lead">Cross-border finance re-verifies facts that were already proven last month — at the cost of weeks, duplicated compliance spend, and your most sensitive documents scattered across every counterparty.</p>
+      </div>
+      <div class="compare">
+        <div class="cmp bad">
+          <h3><span class="tag">Today</span> Repeated KYC</h3>
+          <ul>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span><div><b>Re-submit everything</b> <span>— passport, statements, source-of-funds at each new bank, fund, or PSP.</span></div></li>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span><div><b>Weeks of delay</b> <span>— each institution runs its own manual KYC and AML review in isolation.</span></div></li>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span><div><b>Data everywhere</b> <span>— raw documents copied to every counterparty, against DPDP data-minimisation.</span></div></li>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span><div><b>Caught too late</b> <span>— fraud and sanctions breaches surface only after settlement.</span></div></li>
+          </ul>
+        </div>
+        <div class="cmp good">
+          <h3><span class="tag">With Proofly</span> Prove, don't repeat</h3>
+          <ul>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><div><b>Verify once</b> <span>— a reusable compliance passport bound cryptographically to you.</span></div></li>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><div><b>Minutes, not weeks</b> <span>— the agent answers each request instantly with a proof.</span></div></li>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><div><b>Zero documents shared</b> <span>— zero-knowledge proofs reveal only true or false.</span></div></li>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><div><b>Caught before settlement</b> <span>— continuous monitoring pauses risk in real time.</span></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section class="band" id="demo">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">Live demo</p>
+        <h2 class="title">Walk through Proofly in three acts</h2>
+        <p class="lead">This is an interactive prototype — click through the flow the way a real user would. Sample data only; no real documents are collected.</p>
+      </div>
+
+      <div class="console">
+        <div class="console-bar">
+          <div class="traffic"><i></i><i></i><i></i></div>
+          <div class="console-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>app.proofly.finance</div>
+          <div class="console-tag">gift-ifsc sandbox</div>
+        </div>
+
+        <div class="steps" role="tablist">
+          <button class="step active" data-step="0" role="tab"><span class="num">1</span><span><span class="st-t">Verify once</span><br><span class="st-s">Mint your passport</span></span></button>
+          <button class="step" data-step="1" role="tab"><span class="num">2</span><span><span class="st-t">Prove everywhere</span><br><span class="st-s">Answer any institution</span></span></button>
+          <button class="step" data-step="2" role="tab"><span class="num">3</span><span><span class="st-t">Stay compliant</span><br><span class="st-s">Continuous monitoring</span></span></button>
+        </div>
+
+        <div class="stage">
+          <!-- ACT 1 -->
+          <div class="act show" data-act="0">
+            <div class="act-grid">
+              <div>
+                <h3>Verify once, then never again</h3>
+                <p class="desc">Your identity and financial credentials are checked a single time and sealed into a passport. The documents stay in your vault — Proofly only ever mints proofs from them.</p>
+                <div class="panel">
+                  <div class="panel-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V5z"/></svg> Credentials on file</div>
+                  <div class="field"><span class="fl">Government ID</span><span class="fv"><span class="lock">•••• verified</span></span></div>
+                  <div class="field"><span class="fl">Proof of address</span><span class="fv"><span class="lock">•••• verified</span></span></div>
+                  <div class="field"><span class="fl">Bank statement</span><span class="fv"><span class="lock">•••• verified</span></span></div>
+                  <div class="field"><span class="fl">Accreditation letter</span><span class="fv"><span class="lock">•••• verified</span></span></div>
+                </div>
+                <div class="stage-actions">
+                  <button class="btn btn-primary" id="mintBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V5z"/><path d="M9 12l2 2 4-4"/></svg>
+                    Mint compliance passport
+                  </button>
+                  <button class="replay" id="mintReset" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 3v4h4"/></svg> Reset</button>
+                </div>
+              </div>
+              <div>
+                <div class="agent" id="mintAgent" aria-live="polite"><span style="color:var(--text-faint)">Ready. Click <b style="color:var(--brand)">Mint compliance passport</b> to begin.<span class="cursor"></span></span></div>
+                <div id="mintResult"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACT 2 -->
+          <div class="act" data-act="1">
+            <div class="act-grid">
+              <div>
+                <h3>One passport answers every request</h3>
+                <p class="desc">An institution asks a question. The agent selects the required check and generates a zero-knowledge proof of that single fact. Pick a request to watch it happen.</p>
+                <div class="req-list" id="reqList">
+                  <button class="req" data-req="0">
+                    <span class="logo" style="background:#2b6fff">GB</span>
+                    <span><span class="rq-t">GIFT IFSC Bank</span><br><span class="rq-s">Are you an accredited investor?</span></span>
+                    <span class="rq-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                  </button>
+                  <button class="req" data-req="1">
+                    <span class="logo" style="background:#7b53ff">AG</span>
+                    <span><span class="rq-t">Aditya Global Fund</span><br><span class="rq-s">Is your net worth above $1M?</span></span>
+                    <span class="rq-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                  </button>
+                  <button class="req" data-req="2">
+                    <span class="logo" style="background:#0ea5a0">PX</span>
+                    <span><span class="rq-t">PayCross Remittance</span><br><span class="rq-s">KYC complete and sanctions clear?</span></span>
+                    <span class="rq-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div class="agent" id="proveAgent" aria-live="polite"><span style="color:var(--text-faint)">Select a request to generate a proof.<span class="cursor"></span></span></div>
+                <div id="proveResult"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACT 3 -->
+          <div class="act" data-act="2">
+            <div>
+              <div class="mon-head">
+                <div>
+                  <h3 style="margin-bottom:4px">Compliance that never clocks out</h3>
+                  <p class="desc" style="margin:0">The agent scores every transaction in real time against AML, sanctions, and fraud rules — and pauses risk before it settles.</p>
+                </div>
+                <span class="mon-live"><span class="d"></span> Monitoring live</span>
+              </div>
+              <div class="panel" style="padding:16px 18px">
+                <div class="tbl">
+                  <table>
+                    <thead><tr><th>Counterparty</th><th>Corridor</th><th class="r">Amount</th><th class="r">Risk</th><th class="r">Status</th></tr></thead>
+                    <tbody id="monBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="agent-note hidden" id="agentNote">
+                <div class="an-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></div>
+                <div><div class="an-t">Agent paused a transaction before settlement</div><div class="an-d">Skyline Traders FZE flagged: counterparty on updated sanctions list, corridor risk 0.91. Held for review and written to the audit trail — automatically, in under a second.</div></div>
+              </div>
+              <div class="stage-actions">
+                <button class="btn btn-ghost" id="monReplay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 3v4h4"/></svg> Replay stream</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section class="band alt" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">How it works</p>
+        <h2 class="title">Proof-based compliance, in four moving parts</h2>
+        <p class="lead">A real sequence: verify, seal, prove, watch. Each step is enforced by cryptography and an autonomous agent — not by trust.</p>
+      </div>
+      <div class="flow">
+        <div class="fcard">
+          <div class="fn">STEP 01</div>
+          <div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-2 2-2-2"/></svg></div>
+          <h4>Verify once</h4>
+          <p>Identity and financials are checked a single time. Documents stay in a user-controlled vault, never re-shared.</p>
+        </div>
+        <div class="fcard">
+          <div class="fn">STEP 02</div>
+          <div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+          <h4>Seal into a passport</h4>
+          <p>Credentials are bound to you by a deterministic hash — the same person always maps to the same passport, unlinkable across dApps.</p>
+        </div>
+        <div class="fcard">
+          <div class="fn">STEP 03</div>
+          <div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V5z"/></svg></div>
+          <h4>Prove on demand</h4>
+          <p>The agent reads each institution's request and returns a zero-knowledge proof — only true or false, never the underlying data.</p>
+        </div>
+        <div class="fcard">
+          <div class="fn">STEP 04</div>
+          <div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+          <h4>Monitor continuously</h4>
+          <p>Post-onboarding, the agent scores every transaction and pauses fraud or sanctions risk before settlement, with a full audit trail.</p>
+        </div>
+      </div>
+
+      <div class="tech">
+        <span class="tl">Tech enablers</span>
+        <span class="chip">Zero-knowledge proofs</span>
+        <span class="chip">AI compliance agent</span>
+        <span class="chip">Cryptographic identity binding</span>
+        <span class="chip">User-controlled credentials</span>
+        <span class="chip">Real-time risk analysis</span>
+        <span class="chip">Verifiable audit trail</span>
+      </div>
+
+      <div class="built">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V5z"/><path d="M9 12l2 2 4-4"/></svg>
+        <div class="bt">Not vapourware. The proof engine builds on <span class="proj">StellaRay</span> — a live zero-knowledge login layer with an eligibility-proof framework — and the agent on <span class="proj">Prophit</span>, an autonomous system with code-enforced risk guards and an auditable action log. <b>Both already ship.</b></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="brand">
+      <svg class="seal" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 2.5l11 4v8.2c0 7.3-4.7 12.7-11 14.8C9.7 27.4 5 22 5 14.7V6.5l11-4z" fill="var(--brand)" opacity=".14"/><path d="M16 2.5l11 4v8.2c0 7.3-4.7 12.7-11 14.8C9.7 27.4 5 22 5 14.7V6.5l11-4z" stroke="var(--brand)" stroke-width="1.6"/><path d="M10.5 16.2l3.6 3.6 7.4-7.7" stroke="var(--brand)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Proof<b>ly</b>
+    </div>
+    <div class="fl"><b>Prototype for the GIFT IFIH Young Builders' Program</b> · Agentic AI in Financial Services. Interactive concept demo with sample data — no real documents are collected or stored.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- theme ---------- */
+  var root = document.documentElement, tt = document.getElementById("themeToggle");
+  var sun = tt.querySelector(".ic-sun"), moon = tt.querySelector(".ic-moon");
+  function stored(){ try{ return localStorage.getItem("proofly-theme"); }catch(e){ return null; } }
+  function effective(){
+    var t = root.getAttribute("data-theme");
+    if(t) return t;
+    return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark":"light";
+  }
+  function paintToggle(){ var d = effective()==="dark"; sun.style.display = d?"none":"block"; moon.style.display = d?"block":"none"; }
+  var s = stored(); if(s){ root.setAttribute("data-theme", s); }
+  paintToggle();
+  tt.addEventListener("click", function(){
+    var next = effective()==="dark" ? "light":"dark";
+    root.setAttribute("data-theme", next);
+    try{ localStorage.setItem("proofly-theme", next); }catch(e){}
+    paintToggle();
+  });
+
+  /* ---------- helpers ---------- */
+  function hex(n){ var s=""; var c="0123456789abcdef"; for(var i=0;i<n;i++) s+=c[Math.floor(Math.random()*16)]; return s; }
+  function el(tag, cls, html){ var e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+  function delay(ms){ return new Promise(function(r){ setTimeout(r, reduce?Math.min(ms,60):ms); }); }
+
+  /* ---------- hero: proof cycler ---------- */
+  var ppProve = document.getElementById("ppProve");
+  var proofs = ["KYC completed","accredited investor","sanctions clear","net worth &gt; $1M","jurisdiction eligible"];
+  var pi = 0;
+  function cycleProof(){
+    pi = (pi+1) % proofs.length;
+    ppProve.innerHTML = 'Proving: <b>'+proofs[pi]+'</b> &rarr; verified ✓';
+  }
+  if(!reduce) setInterval(cycleProof, 2600);
+
+  /* ---------- hero: node network ---------- */
+  var cv = document.getElementById("net"), ctx = cv && cv.getContext("2d");
+  if(cv && ctx && !reduce){
+    var DPR = Math.min(window.devicePixelRatio||1, 2), nodes = [], raf;
+    function accent(){ return getComputedStyle(root).getPropertyValue("--brand").trim() || "#12b981"; }
+    function size(){
+      var r = cv.parentElement.getBoundingClientRect();
+      cv.width = r.width*DPR; cv.height = r.height*DPR;
+      cv.style.width = r.width+"px"; cv.style.height = r.height+"px";
+      var count = Math.max(14, Math.min(30, Math.floor(r.width/48)));
+      nodes = [];
+      for(var i=0;i<count;i++){
+        nodes.push({ x:Math.random()*cv.width, y:Math.random()*cv.height, vx:(Math.random()-.5)*.14*DPR, vy:(Math.random()-.5)*.14*DPR });
+      }
+    }
+    function draw(){
+      ctx.clearRect(0,0,cv.width,cv.height);
+      var col = accent(), max = 132*DPR;
+      for(var i=0;i<nodes.length;i++){
+        var n=nodes[i]; n.x+=n.vx; n.y+=n.vy;
+        if(n.x<0||n.x>cv.width) n.vx*=-1;
+        if(n.y<0||n.y>cv.height) n.vy*=-1;
+      }
+      for(var a=0;a<nodes.length;a++){
+        for(var b=a+1;b<nodes.length;b++){
+          var dx=nodes[a].x-nodes[b].x, dy=nodes[a].y-nodes[b].y, d=Math.sqrt(dx*dx+dy*dy);
+          if(d<max){
+            ctx.strokeStyle=col; ctx.globalAlpha=(1-d/max)*0.16; ctx.lineWidth=1*DPR;
+            ctx.beginPath(); ctx.moveTo(nodes[a].x,nodes[a].y); ctx.lineTo(nodes[b].x,nodes[b].y); ctx.stroke();
+          }
+        }
+      }
+      ctx.globalAlpha=0.5;
+      for(var k=0;k<nodes.length;k++){
+        ctx.fillStyle=col; ctx.beginPath(); ctx.arc(nodes[k].x,nodes[k].y,1.6*DPR,0,Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      raf=requestAnimationFrame(draw);
+    }
+    size(); draw();
+    var rt; window.addEventListener("resize", function(){ clearTimeout(rt); rt=setTimeout(size,180); });
+  }
+
+  /* ---------- demo stepper ---------- */
+  var steps = Array.prototype.slice.call(document.querySelectorAll(".step"));
+  var acts = Array.prototype.slice.call(document.querySelectorAll(".act"));
+  var monStarted = false;
+  function goStep(i){
+    steps.forEach(function(s,idx){ s.classList.toggle("active", idx===i); });
+    acts.forEach(function(a,idx){ a.classList.toggle("show", idx===i); });
+    if(i===2 && !monStarted){ monStarted=true; runMonitor(); }
+  }
+  steps.forEach(function(s){ s.addEventListener("click", function(){ goStep(parseInt(s.dataset.step,10)); }); });
+
+  /* ---------- ACT 1: mint ---------- */
+  var mintBtn=document.getElementById("mintBtn"), mintReset=document.getElementById("mintReset");
+  var mintAgent=document.getElementById("mintAgent"), mintResult=document.getElementById("mintResult");
+  function logRow(container, text, cls, t){
+    var line = el("div","logline"+(cls?" "+cls:""));
+    line.innerHTML = '<span class="t">'+t+'</span><span class="m">'+text+'</span>';
+    container.appendChild(line);
+    container.scrollTop = container.scrollHeight;
+    return line;
+  }
+  async function mint(){
+    mintBtn.setAttribute("disabled","true");
+    mintAgent.innerHTML=""; mintResult.innerHTML="";
+    var seq = [
+      ["00:00","Reading sealed credentials from vault…"],
+      ["00:00","Hashing identity with <b>Poseidon</b> commitment…"],
+      ["00:01","Binding passport to holder (deterministic)…"],
+      ["00:01","Generating attribute proofs: KYC, accredited, sanctions, jurisdiction…","ok"],
+      ["00:02","Passport minted. Documents never left the vault.","ok"]
+    ];
+    for(var i=0;i<seq.length;i++){ await delay(560); logRow(mintAgent, seq[i][1], seq[i][2]||"", seq[i][0]); }
+    await delay(400);
+    var card = el("div","verified-card");
+    card.innerHTML =
+      '<div class="big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>'+
+      '<h4>Compliance passport minted</h4>'+
+      '<p>Reusable across every institution. Your documents stay private.</p>'+
+      '<div class="proofstr">did:proofly:0x'+hex(4)+'a'+hex(3)+'…'+hex(4)+'  ·  commitment 0x'+hex(8)+'</div>';
+    mintResult.appendChild(card);
+    mintReset.style.display="inline-flex";
+  }
+  mintBtn.addEventListener("click", mint);
+  mintReset.addEventListener("click", function(){
+    mintBtn.removeAttribute("disabled");
+    mintReset.style.display="none";
+    mintResult.innerHTML="";
+    mintAgent.innerHTML='<span style="color:var(--text-faint)">Ready. Click <b style="color:var(--brand)">Mint compliance passport</b> to begin.<span class="cursor"></span></span>';
+  });
+
+  /* ---------- ACT 2: prove ---------- */
+  var reqBtns=Array.prototype.slice.call(document.querySelectorAll(".req"));
+  var proveAgent=document.getElementById("proveAgent"), proveResult=document.getElementById("proveResult");
+  var scenarios=[
+    { who:"GIFT IFSC Bank", check:"accredited_investor", claim:"Accredited investor", detail:"Bank onboarding · Rule 2(1)(b) accredited status" },
+    { who:"Aditya Global Fund", check:"net_worth_gt_1m", claim:"Net worth above $1,000,000", detail:"Fund subscription · qualified investor threshold" },
+    { who:"PayCross Remittance", check:"kyc_and_sanctions", claim:"KYC complete and sanctions clear", detail:"PSP onboarding · AML / sanctions gate" }
+  ];
+  var proving=false;
+  async function prove(idx){
+    if(proving) return; proving=true;
+    reqBtns.forEach(function(b,i){ b.classList.toggle("sel", i===idx); });
+    var sc=scenarios[idx];
+    proveAgent.innerHTML=""; proveResult.innerHTML="";
+    var seq=[
+      ["→","Request from <b>"+sc.who+"</b> received."],
+      ["→","Parsing requirement: <b>"+sc.check+"</b>"],
+      ["→","Selecting minimal disclosure set…"],
+      ["→","Generating zero-knowledge proof (Groth16)…"],
+      ["✓","Proof verified. Revealed: only <b>true</b>.","ok"]
+    ];
+    for(var i=0;i<seq.length;i++){ await delay(540); logRow(proveAgent, seq[i][1], seq[i][2]||"", seq[i][0]); }
+    var ps=el("div","proofstr"); ps.textContent="π = 0x"+hex(10)+" · a="+hex(6)+" b="+hex(6)+" c="+hex(6); proveAgent.appendChild(ps);
+    await delay(350);
+    var card=el("div","verified-card");
+    card.innerHTML=
+      '<div class="big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>'+
+      '<h4>'+sc.claim+' — proven</h4>'+
+      '<p>'+sc.who+' · '+sc.detail+'</p>'+
+      '<div class="disclose">'+
+        '<div><div class="dn">0</div><div class="dl">Docs shared</div></div>'+
+        '<div><div class="dn">1</div><div class="dl">Bit revealed</div></div>'+
+        '<div><div class="dn">~41s</div><div class="dl">vs ~3 weeks</div></div>'+
+      '</div>';
+    proveResult.appendChild(card);
+    proving=false;
+  }
+  reqBtns.forEach(function(b){ b.addEventListener("click", function(){ prove(parseInt(b.dataset.req,10)); }); });
+
+  /* ---------- ACT 3: monitor ---------- */
+  var monBody=document.getElementById("monBody"), agentNote=document.getElementById("agentNote"), monReplay=document.getElementById("monReplay");
+  var txns=[
+    { m:"Meridian Exports Ltd", c:"IN → SG", a:"$ 24,800", s:0.08, st:"clr" },
+    { m:"Nomura Securities", c:"JP → IN", a:"$ 112,400", s:0.12, st:"clr" },
+    { m:"Kaveri Textiles", c:"IN → AE", a:"$ 8,150", s:0.19, st:"clr" },
+    { m:"Skyline Traders FZE", c:"AE → IN", a:"$ 96,300", s:0.91, st:"hold", flag:true },
+    { m:"Orbit Capital LLP", c:"UK → IN", a:"$ 47,900", s:0.34, st:"rev" },
+    { m:"Lotus Pharma Inc", c:"US → IN", a:"$ 61,200", s:0.10, st:"clr" }
+  ];
+  var statMap={ clr:["clr","Cleared",'<path d="M20 6L9 17l-5-5"/>'], hold:["hold","Paused",'<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'], rev:["rev","In review",'<circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/>'] };
+  var monTimer=null;
+  async function runMonitor(){
+    monBody.innerHTML=""; agentNote.classList.add("hidden");
+    for(var i=0;i<txns.length;i++){
+      await delay(700);
+      var t=txns[i], sm=statMap[t.st];
+      var tr=el("tr", t.flag?"flagged":"");
+      var scoreColor = t.s>=0.7?"var(--critical)":(t.s>=0.3?"var(--risk)":"var(--proof)");
+      tr.innerHTML=
+        '<td class="mrc">'+t.m+'</td>'+
+        '<td class="corr">'+t.c+'</td>'+
+        '<td class="r amt tnum">'+t.a+'</td>'+
+        '<td class="r score tnum" style="color:'+scoreColor+'">'+t.s.toFixed(2)+'</td>'+
+        '<td class="r"><span class="stat '+sm[0]+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+sm[2]+'</svg>'+sm[1]+'</span></td>';
+      monBody.appendChild(tr);
+      if(t.flag){ await delay(260); agentNote.classList.remove("hidden"); }
+    }
+  }
+  monReplay.addEventListener("click", runMonitor);
+
+})();
+</script>
+</body>
+</html>

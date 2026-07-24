@@ -1,4 +1,4 @@
-# Proofly, Verify Once. Prove Everywhere.
+# Proofly: Verify Once. Prove Everywhere.
 
 **Agentic, privacy-first compliance infrastructure for cross-border finance.**
 
@@ -31,10 +31,10 @@ sanctions breaches are usually caught only after money has moved.
 
 ## How it works
 
-1. **Verify once**, identity and financials checked a single time; documents stay in a user-controlled vault.
-2. **Seal into a passport**, credentials bound by a deterministic hash; unlinkable across institutions.
-3. **Prove on demand**, the agent returns a zero-knowledge proof of the requested fact only.
-4. **Monitor continuously**, every transaction scored in real time, risk paused with a verifiable audit trail.
+1. **Verify once:** identity and financials checked a single time; documents stay in a user-controlled vault.
+2. **Seal into a passport:** credentials bound by a deterministic hash; unlinkable across institutions.
+3. **Prove on demand:** the agent returns a zero-knowledge proof of the requested fact only.
+4. **Monitor continuously:** every transaction scored in real time, risk paused with a verifiable audit trail.
 
 **Tech enablers:** zero-knowledge proofs · AI compliance agent · cryptographic identity
 binding · user-controlled credentials · real-time risk analysis · verifiable audit trail.
